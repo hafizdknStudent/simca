@@ -28,8 +28,8 @@ func main() {
 
 	router := gin.Default()
 
-	router.Static("assets", "templates/assets")
-	router.LoadHTMLGlob("templates/*.html")
+	// router.Static("assets", "templates/assets")
+	// router.LoadHTMLGlob("templates/*.html")
 
 	router.GET("/", googleHandler.GetGoogleLogin)
 	router.GET("/login-google", googleHandler.PostGoogleLogin)
