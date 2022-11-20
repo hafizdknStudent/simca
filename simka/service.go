@@ -3,6 +3,7 @@ package simka
 import (
 	"context"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -139,7 +140,8 @@ func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error
 
 	loc, _ := time.LoadLocation("Asia/Jakarta")
 	timeNow := time.Now()
-	tnEndMonth := timeNow.AddDate(0, s.EndMonthDate, 0)
+	tnNext := timeNow.AddDate(0, s.EndMonthDate, 0)
+	tnMonthNext := int(tnNext.Month())
 
 	for _, event := range events {
 		tn := timeNow.AddDate(0, 0, event.HtoDay)
@@ -149,11 +151,10 @@ func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error
 		day := tn.Day()
 		sec := tn.Second()
 		msec := tn.Nanosecond()
-		endMonth := tnEndMonth.Month()
 
 		startTime := time.Date(year, month, day, event.StartHour, event.StartMin, sec, msec, loc).Format(time.RFC3339)
-		endTime := time.Date(year, endMonth, day, event.EndHour, event.EndMin, sec, msec, loc).Format(time.RFC3339)
-
+		endTime := time.Date(year, month, day, event.EndHour, event.EndMin, sec, msec, loc).Format(time.RFC3339)
+		recurrence := fmt.Sprintf("%s%d", event.Recurrence, tnMonthNext)
 		newEvent := calendar.Event{
 			Summary:     event.Summary,
 			Description: event.Description,
@@ -165,9 +166,7 @@ func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error
 				DateTime: endTime,
 				TimeZone: loc.String(),
 			},
-			Recurrence: []string{
-				event.Recurrence,
-			},
+			Recurrence: []string{recurrence},
 		}
 
 		_, err := calendarService.Events.Insert("primary", &newEvent).Do()

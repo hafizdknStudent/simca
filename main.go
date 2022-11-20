@@ -28,13 +28,12 @@ func main() {
 
 	router := gin.Default()
 
-	// router.Static("assets", "templates/assets")
-	// router.LoadHTMLGlob("templates/*.html")
+	router.Static("assets", "templates/assets")
+	router.LoadHTMLGlob("templates/*.html")
 
 	router.GET("/", googleHandler.GetGoogleLogin)
 	router.GET("/login-google", googleHandler.PostGoogleLogin)
 	router.GET("/google_callback", googleHandler.GetGoogleCallBack)
-	router.GET("/close", googleHandler.Close)
 	router.GET("/simaka", simakaHandler.GetLoginSimaka)
 	router.POST("/login-simaka", simakaHandler.PostLoginSimaka)
 	router.GET("/success", simakaHandler.SuccessLogin)

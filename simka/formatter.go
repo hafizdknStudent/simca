@@ -33,7 +33,7 @@ func CalendarEventFormatter(events helper.ListMataKuliah) ([]EventFormatter, err
 		hari = event.Hari
 		jam = event.Jam
 
-		summary := fmt.Sprintf("Matkul %s, Ruang %s", matkul, ruangan)
+		summary := fmt.Sprintf("%s, Ruang %s", matkul, ruangan)
 		description := fmt.Sprintf("Matkul %s\nRuang %s\nDosen %s\nKelas %s", matkul, ruangan, dosen, kelas)
 		day, htoDay := convertDay(hari)
 		clockEvent, err := parseTime(jam)
@@ -48,7 +48,7 @@ func CalendarEventFormatter(events helper.ListMataKuliah) ([]EventFormatter, err
 			StartMin:    clockEvent["startEnd"],
 			EndHour:     clockEvent["endHour"],
 			EndMin:      clockEvent["endMin"],
-			Recurrence:  fmt.Sprintf("RRULE:FREQ=DAILY;BYDAY=%s", day),
+			Recurrence:  fmt.Sprintf("RRULE:FREQ=WEEKLY;BYDAY=%s;BYMONTH=", day),
 			HtoDay:      htoDay,
 		}
 

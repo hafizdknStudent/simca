@@ -31,8 +31,8 @@ func LoadConfig() {
 		Endpoint:     google.Endpoint,
 		RedirectURL:  "http://localhost:8080/google_callback",
 		Scopes: []string{
-			"https://www.googleapis.com/auth/userinfo.email",
-			"https://www.googleapis.com/auth/userinfo.profile",
+			// "https://www.googleapis.com/auth/userinfo.email",
+			// "https://www.googleapis.com/auth/userinfo.profile",
 			"https://www.googleapis.com/auth/calendar",
 		},
 	}
