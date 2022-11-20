@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -130,6 +131,59 @@ func (s *service) FormatEvent(events helper.ListMataKuliah) ([]EventFormatter, e
 	return eventFormatter, nil
 }
 
+func (s *service) CreateExpiredMonthDate(timeNow time.Time) []string {
+	tnNext := timeNow.AddDate(0, s.EndMonthDate-1, 0)
+	monthNow := int(timeNow.Month())
+	tnMonthNext := int(tnNext.Month())
+
+	index := 1
+	overFlow := false
+
+	listMonth := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}
+	listTargetMonth := make([]string, 0)
+	hashMap := make(map[string]bool, 0)
+
+	appendMonth := func(index int) {
+		nMonth := listMonth[index]
+		if nMonth == 13 {
+			nMonth = 1
+		}
+
+		for _, val := range listTargetMonth {
+			hashMap[val] = true
+		}
+
+		if isExits := hashMap[strconv.Itoa(nMonth)]; !isExits {
+			listTargetMonth = append(listTargetMonth, strconv.Itoa(nMonth))
+		}
+	}
+
+	for true {
+		if index == 13 {
+			overFlow = true
+			index = 1
+		}
+
+		if index >= monthNow && !overFlow {
+			appendMonth(index)
+			if index == tnMonthNext {
+				break
+			}
+		}
+
+		if overFlow {
+			appendMonth(index)
+			if index == tnMonthNext {
+				break
+			}
+		}
+
+		index += 1
+	}
+
+	return listTargetMonth
+}
+
 func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error {
 	client := oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&token))
 
@@ -140,8 +194,7 @@ func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error
 
 	loc, _ := time.LoadLocation("Asia/Jakarta")
 	timeNow := time.Now()
-	tnNext := timeNow.AddDate(0, s.EndMonthDate, 0)
-	tnMonthNext := int(tnNext.Month())
+	listTargetMonth := s.CreateExpiredMonthDate(timeNow)
 
 	for _, event := range events {
 		tn := timeNow.AddDate(0, 0, event.HtoDay)
@@ -154,7 +207,7 @@ func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error
 
 		startTime := time.Date(year, month, day, event.StartHour, event.StartMin, sec, msec, loc).Format(time.RFC3339)
 		endTime := time.Date(year, month, day, event.EndHour, event.EndMin, sec, msec, loc).Format(time.RFC3339)
-		recurrence := fmt.Sprintf("%s%d", event.Recurrence, tnMonthNext)
+		recurrence := fmt.Sprintf("%s%s", event.Recurrence, strings.Join(listTargetMonth, ","))
 		newEvent := calendar.Event{
 			Summary:     event.Summary,
 			Description: event.Description,
