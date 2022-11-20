@@ -22,12 +22,14 @@ type Service interface {
 	CreateEvent(token oauth2.Token, event []EventFormatter) error
 	Login(input UserLoginInput) (UserLoginInput, error)
 	ParseMataKuliah() (helper.ListMataKuliah, error)
+	SetEndTime(date int)
 }
 
 type service struct {
 	Jar          *utilities.Jar
 	Client       http.Client
 	SuccessLogin bool
+	EndMonthDate int
 }
 
 var (
@@ -38,6 +40,10 @@ var (
 
 func NewService(jar *utilities.Jar) *service {
 	return &service{Jar: jar}
+}
+
+func (s *service) SetEndTime(date int) {
+	s.EndMonthDate = date
 }
 
 func (s *service) Login(input UserLoginInput) (UserLoginInput, error) {
@@ -133,6 +139,7 @@ func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error
 
 	loc, _ := time.LoadLocation("Asia/Jakarta")
 	timeNow := time.Now()
+	tnEndMonth := timeNow.AddDate(0, s.EndMonthDate, 0)
 
 	for _, event := range events {
 		tn := timeNow.AddDate(0, 0, event.HtoDay)
@@ -142,9 +149,10 @@ func (s *service) CreateEvent(token oauth2.Token, events []EventFormatter) error
 		day := tn.Day()
 		sec := tn.Second()
 		msec := tn.Nanosecond()
+		endMonth := tnEndMonth.Month()
 
 		startTime := time.Date(year, month, day, event.StartHour, event.StartMin, sec, msec, loc).Format(time.RFC3339)
-		endTime := time.Date(year, month, day, event.EndHour, event.EndMin, sec, msec, loc).Format(time.RFC3339)
+		endTime := time.Date(year, endMonth, day, event.EndHour, event.EndMin, sec, msec, loc).Format(time.RFC3339)
 
 		newEvent := calendar.Event{
 			Summary:     event.Summary,

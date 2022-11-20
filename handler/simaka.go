@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 
@@ -25,6 +26,8 @@ func (s *SimkaHandler) PostLoginSimaka(c *gin.Context) {
 
 	nim := c.PostForm("nim")
 	password := c.PostForm("password")
+	date, _ := strconv.Atoi(c.PostForm("end-date"))
+	s.simakaService.SetEndTime(date)
 
 	input.NIM = nim
 	input.Password = password
